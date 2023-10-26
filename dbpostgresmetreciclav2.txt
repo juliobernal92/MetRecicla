@@ -1,0 +1,162 @@
+-- Crear la tabla Proveedores
+CREATE TABLE Proveedores (
+    idproveedor SERIAL PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    telefono VARCHAR(20),
+    direccion VARCHAR(255)
+);
+
+-- Crear la tabla Metales
+CREATE TABLE Metales (
+    idmetal SERIAL PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    preciocompra DECIMAL(10, 2) NOT NULL
+);
+
+-- Crear la tabla Stock
+CREATE TABLE Stock (
+    idstock SERIAL PRIMARY KEY,
+    idmetal INT REFERENCES Metales(idmetal),
+    cantidad INT NOT NULL,
+    subtotal DECIMAL(10, 2) NOT NULL,
+    idticket INT REFERENCES Ticket(idticket)
+);
+
+-- Crear la tabla Ticket
+CREATE TABLE Ticket (
+    idticket SERIAL PRIMARY KEY,
+    fecha DATE NOT NULL,
+    idproveedor INT REFERENCES Proveedores(idproveedor),
+    idusuario INT REFERENCES Usuarios(idusuario)
+);
+
+-- Crear la tabla DetallesTicket
+CREATE TABLE DetallesTicket (
+    iddetalle SERIAL PRIMARY KEY,
+    idstock INT REFERENCES Stock(idstock),
+    idticket INT REFERENCES Ticket(idticket)
+);
+
+-- Crear la tabla Total
+CREATE TABLE Total (
+    idtotal SERIAL PRIMARY KEY,
+    idticket INT REFERENCES Ticket(idticket),
+    total DECIMAL(10, 2) NOT NULL
+);
+
+-- Crear la tabla Sucursal
+CREATE TABLE Sucursal (
+    idsucursal SERIAL PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    direccion TEXT NOT NULL,
+    idtelsuc INT REFERENCES TelSucursal(idtelsuc)
+);
+
+-- Crear la tabla TelSucursal
+CREATE TABLE TelSucursal (
+    idtelsuc SERIAL PRIMARY KEY,
+    telefonouno VARCHAR(20),
+    telefonodos VARCHAR(20)
+);
+
+-- Crear la tabla Gastos
+CREATE TABLE Gastos (
+    idgasto SERIAL PRIMARY KEY,
+    descripcion TEXT NOT NULL,
+    monto DECIMAL(10, 2) NOT NULL,
+    fecha DATE NOT NULL
+);
+
+-- Crear la tabla Empleados
+CREATE TABLE Empleados (
+    idempleado SERIAL PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    direccion TEXT,
+    telefono VARCHAR(20),
+    idsucursal INT REFERENCES Sucursal(idsucursal)
+);
+
+-- Crear la tabla Asistencia
+CREATE TABLE Asistencia (
+    idasistencia SERIAL PRIMARY KEY,
+    idempleado INT REFERENCES Empleados(idempleado),
+    fecha DATE NOT NULL,
+    horaentrada TIME,
+    horasalida TIME
+);
+
+-- Crear la tabla Salarios
+CREATE TABLE Salarios (
+    idsalario SERIAL PRIMARY KEY,
+    idempleado INT REFERENCES Empleados(idempleado),
+    fecha DATE NOT NULL,
+    horastrabajadas INT NOT NULL,
+    pagado BOOLEAN NOT NULL,
+    montopagado DECIMAL(10, 2)
+);
+
+-- Crear la tabla Usuarios
+CREATE TABLE Usuarios (
+    idusuario SERIAL PRIMARY KEY,
+    idempleado INT REFERENCES Empleados(idempleado),
+    nombreusuario VARCHAR(50) NOT NULL,
+    contraseña VARCHAR(255) NOT NULL
+);
+
+-- Crear la tabla Ventas
+CREATE TABLE Ventas (
+    idventa SERIAL PRIMARY KEY,
+    idprecioventa INT REFERENCES PreciosVenta(idprecioventa),
+    cantidad INT NOT NULL,
+    subtotal DECIMAL(10, 2) NOT NULL
+);
+
+-- Crear la tabla PreciosVenta
+CREATE TABLE PreciosVenta (
+    idprecioventa SERIAL PRIMARY KEY,
+    idmetal INT REFERENCES Metales(idmetal),
+    idlocalventa INT REFERENCES LocalesVenta(idlocalventa),
+    precio DECIMAL(10, 2) NOT NULL
+);
+
+-- Crear la tabla LocalesVenta
+CREATE TABLE LocalesVenta (
+    idlocalventa SERIAL PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    direccion TEXT
+);
+
+-- Crear la tabla TotalCantVenta
+CREATE TABLE TotalCantVenta (
+    idventatotal SERIAL PRIMARY KEY,
+    idventa INT REFERENCES Ventas(idventa),
+    total DECIMAL(10, 2) NOT NULL
+);
+
+-- Crear la tabla BalanceGeneral
+CREATE TABLE BalanceGeneral (
+    idbalance SERIAL PRIMARY KEY,
+    fecha DATE NOT NULL,
+    idventas INT REFERENCES Ventas(idventa),
+    balanceinicial DECIMAL(10, 2) NOT NULL,
+    saldofinal DECIMAL(10, 2) NULL
+);
+
+-- Crear la tabla Depositos
+CREATE TABLE Depositos (
+    iddepositos SERIAL PRIMARY KEY,
+    idbalance INT REFERENCES BalanceGeneral(idbalance),
+    idempleado INT REFERENCES Empleados(idempleado),
+    monto DECIMAL(10, 2) NOT NULL,
+    fecha DATE NOT NULL
+);
+
+-- Crear la tabla Retiros
+CREATE TABLE Retiros (
+    idretiro SERIAL PRIMARY KEY,
+    idempleado INT REFERENCES Empleados(idempleado),
+    idbalance INT REFERENCES BalanceGeneral(idbalance),
+    concepto TEXT NOT NULL,
+    monto DECIMAL(10, 2) NOT NULL,
+    fecha DATE NOT NULL
+);
