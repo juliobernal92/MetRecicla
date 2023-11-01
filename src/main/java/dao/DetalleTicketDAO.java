@@ -4,6 +4,7 @@
  */
 package dao;
 import entidades.DetalleTicket;
+import java.math.BigDecimal;
 import org.hibernate.SessionFactory;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -59,13 +60,42 @@ public class DetalleTicketDAO {
     }
     
     public List<DetalleTicket> obtenerPorIdTicket(int idticket) {
+        try (Session session = sessionFactory.openSession()) {
+            String hql = "FROM DetalleTicket WHERE idticket = :idticket";
+            Query<DetalleTicket> query = session.createQuery(hql, DetalleTicket.class);
+            query.setParameter("idticket", idticket);
+            return query.getResultList(); // Obtén la lista de detalles
+        }
+    }
+
+    public List<DetalleTicket> obtenerPorIdChatarra(int idChatarra) {
+        try (Session session = sessionFactory.openSession()) {
+            String hql = "FROM DetalleTicket WHERE chatarra.idchatarra = :idChatarra";
+            Query<DetalleTicket> query = session.createQuery(hql, DetalleTicket.class);
+            query.setParameter("idChatarra", idChatarra);
+            return query.getResultList(); // Obtén la lista de detalles que corresponden al ID de la chatarra
+        }
+    }
+    
+    public boolean actualizarCantidadPorIdChatarra(int idChatarra, BigDecimal nuevaCantidad) {
     try (Session session = sessionFactory.openSession()) {
-        String hql = "FROM DetalleTicket WHERE idticket = :idticket";
-        Query<DetalleTicket> query = session.createQuery(hql, DetalleTicket.class);
-        query.setParameter("idticket", idticket);
-        return query.getResultList(); // Obtén la lista de detalles
+        Transaction transaction = session.beginTransaction();
+
+        // Consulta para actualizar la cantidad por idchatarra
+        String hql = "UPDATE DetalleTicket SET cantidad = :nuevaCantidad WHERE chatarra.idchatarra = :idChatarra";
+        Query<DetalleTicket> query = session.createQuery(hql);
+
+        query.setParameter("nuevaCantidad", nuevaCantidad);
+        query.setParameter("idChatarra", idChatarra);
+
+        int filasActualizadas = query.executeUpdate();
+
+        transaction.commit();
+        
+        return filasActualizadas > 0; // Retorna true si al menos una fila fue actualizada
     }
 }
 
-    
+
+
 }

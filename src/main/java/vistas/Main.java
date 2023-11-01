@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 package vistas;
 
 import com.formdev.flatlaf.FlatLightLaf;
@@ -16,10 +12,10 @@ import entidades.Ticket;
 import entidades.Total;
 import entidades.Vendedor;
 import java.awt.Desktop;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.KeyEvent;
+import static java.awt.image.ImageObserver.HEIGHT;
 import java.io.File;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -32,14 +28,13 @@ import java.util.List;
 import java.util.Locale;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
-import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.text.NumberFormatter;
+import javax.swing.table.TableModel;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -55,13 +50,10 @@ import utilidades.HibernateUtil;
 
 /**
  *
- * @author Doomed666
+ * @author Julio Bernal
  */
 public class Main extends javax.swing.JFrame {
 
-    /**
-     * Creates new form Main
-     */
     SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
     private int total = 0;
     DefaultTableModel tableModel;
@@ -91,6 +83,7 @@ public class Main extends javax.swing.JFrame {
     private void ConfiInicio(){
         this.setLocationRelativeTo(null);//pone en el centro la pantalla
         setExtendedState(JFrame.MAXIMIZED_BOTH);
+        deshabilitarBotonesEdicion();
    }
     
     private void comboBoxChatarra() {
@@ -140,6 +133,7 @@ public class Main extends javax.swing.JFrame {
                     String nombreChatarra = chatarra.getNombre();
                     BigDecimal precio = chatarra.getPrecio();
                     BigDecimal subtotal = cantidad.multiply(precio);
+                    int iddetalle = detallesticket.getIddetalle();
 
                     // Aplicar el formato a las celdas que contienen números decimales
                     modelo.addRow(new Object[]{
@@ -147,7 +141,8 @@ public class Main extends javax.swing.JFrame {
                         decimalFormat.format(cantidad),
                         nombreChatarra,
                         decimalFormat.format(precio),
-                        decimalFormat.format(subtotal)
+                        decimalFormat.format(subtotal),
+                        iddetalle                            
                     });
                 }
             }
@@ -174,13 +169,12 @@ public class Main extends javax.swing.JFrame {
         lbltotal.setText(total.toString()); // Muestra el total en formato de texto
     }
 
-
-
     private void limpiarChatarra(){
         txtidchatarra.setText("");
         txtcantidad.setText("");
         txtvendedor.requestFocus();
         cbchatarra.setSelectedIndex(0);
+        
     }
     
     private void limpiarTodo() {
@@ -199,7 +193,20 @@ public class Main extends javax.swing.JFrame {
         txtidtotal.setText("");
 
     }
+    
+    private void habilitarBotonesEdicion() {
+        btn_editar.setEnabled(true);
+        btn_eliminar.setEnabled(true);
+        btn_añadir.setEnabled(false);
 
+    }
+
+    private void deshabilitarBotonesEdicion() {
+        btn_editar.setEnabled(false);
+        btn_eliminar.setEnabled(false);
+        btn_añadir.setEnabled(true);
+
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -251,6 +258,7 @@ public class Main extends javax.swing.JFrame {
         jLabel13 = new javax.swing.JLabel();
         btn_imprimir = new javax.swing.JButton();
         txtidtotal = new javax.swing.JLabel();
+        txtiddetalle = new javax.swing.JLabel();
         paneInventario = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         listachatarra = new javax.swing.JList<>();
@@ -395,9 +403,19 @@ public class Main extends javax.swing.JFrame {
 
         btn_editar.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         btn_editar.setText("Editar");
+        btn_editar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_editarActionPerformed(evt);
+            }
+        });
 
         btn_eliminar.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         btn_eliminar.setText("Eliminar");
+        btn_eliminar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_eliminarActionPerformed(evt);
+            }
+        });
 
         btn_limpiar.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         btn_limpiar.setText("Limpiar");
@@ -414,15 +432,20 @@ public class Main extends javax.swing.JFrame {
 
             },
             new String [] {
-                "ID", "Cantidad", "Detalles", "Precio", "Subtotal"
+                "ID", "Cantidad", "Detalles", "Precio", "Subtotal", "IDD"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, true
+                false, false, false, false, true, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
+            }
+        });
+        tbdetalles.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tbdetallesMouseClicked(evt);
             }
         });
         jScrollPane1.setViewportView(tbdetalles);
@@ -432,6 +455,7 @@ public class Main extends javax.swing.JFrame {
             tbdetalles.getColumnModel().getColumn(1).setResizable(false);
             tbdetalles.getColumnModel().getColumn(2).setResizable(false);
             tbdetalles.getColumnModel().getColumn(3).setResizable(false);
+            tbdetalles.getColumnModel().getColumn(5).setPreferredWidth(30);
         }
 
         btn_limpiar_todo.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
@@ -458,78 +482,83 @@ public class Main extends javax.swing.JFrame {
         txtidtotal.setForeground(new java.awt.Color(255, 255, 255));
         txtidtotal.setText("     ");
 
+        txtiddetalle.setForeground(new java.awt.Color(255, 255, 255));
+        txtiddetalle.setText("  ");
+
         javax.swing.GroupLayout paneComprasLayout = new javax.swing.GroupLayout(paneCompras);
         paneCompras.setLayout(paneComprasLayout);
         paneComprasLayout.setHorizontalGroup(
             paneComprasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(paneComprasLayout.createSequentialGroup()
                 .addGap(52, 52, 52)
-                .addGroup(paneComprasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(paneComprasLayout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addGap(18, 18, 18)
-                        .addComponent(txtidvendedor, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel3)
-                        .addGap(18, 18, 18)
-                        .addComponent(txtvendedor, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel4)
-                        .addGap(18, 18, 18)
-                        .addComponent(txtcel, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel5)
-                        .addGap(18, 18, 18)
-                        .addComponent(txtdireccion, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel6)
-                        .addGap(18, 18, 18)
-                        .addComponent(txtfecha, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(btn_vendedor))
-                    .addComponent(lblinfocliente, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(paneComprasLayout.createSequentialGroup()
-                        .addComponent(jLabel8)
-                        .addGap(18, 18, 18)
-                        .addComponent(txtidticket, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel9)
-                        .addGap(18, 18, 18)
-                        .addComponent(txtidchatarra, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel10)
-                        .addGap(18, 18, 18)
-                        .addComponent(cbchatarra, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel11)
-                        .addGap(18, 18, 18)
-                        .addComponent(txtprecio)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel12)
-                        .addGap(18, 18, 18)
-                        .addComponent(txtcantidad, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(btn_añadir, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(btn_editar, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(btn_eliminar)
-                        .addGap(18, 18, 18)
-                        .addComponent(btn_limpiar, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(lblinfochatarra, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, paneComprasLayout.createSequentialGroup()
-                        .addComponent(btn_limpiar_todo)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(txtidtotal)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(paneComprasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(paneComprasLayout.createSequentialGroup()
-                                .addComponent(jLabel13)
-                                .addGap(18, 18, 18)
-                                .addComponent(lbltotal, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(btn_imprimir, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                .addGroup(paneComprasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(paneComprasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(paneComprasLayout.createSequentialGroup()
+                            .addComponent(jLabel2)
+                            .addGap(18, 18, 18)
+                            .addComponent(txtidvendedor, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(18, 18, 18)
+                            .addComponent(jLabel3)
+                            .addGap(18, 18, 18)
+                            .addComponent(txtvendedor, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(18, 18, 18)
+                            .addComponent(jLabel4)
+                            .addGap(18, 18, 18)
+                            .addComponent(txtcel, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(18, 18, 18)
+                            .addComponent(jLabel5)
+                            .addGap(18, 18, 18)
+                            .addComponent(txtdireccion, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(18, 18, 18)
+                            .addComponent(jLabel6)
+                            .addGap(18, 18, 18)
+                            .addComponent(txtfecha, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(18, 18, 18)
+                            .addComponent(btn_vendedor))
+                        .addComponent(lblinfocliente, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(paneComprasLayout.createSequentialGroup()
+                            .addComponent(jLabel8)
+                            .addGap(18, 18, 18)
+                            .addComponent(txtidticket, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(18, 18, 18)
+                            .addComponent(jLabel9)
+                            .addGap(18, 18, 18)
+                            .addComponent(txtidchatarra, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(18, 18, 18)
+                            .addComponent(jLabel10)
+                            .addGap(18, 18, 18)
+                            .addComponent(cbchatarra, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(18, 18, 18)
+                            .addComponent(jLabel11)
+                            .addGap(18, 18, 18)
+                            .addComponent(txtprecio)
+                            .addGap(18, 18, 18)
+                            .addComponent(jLabel12)
+                            .addGap(18, 18, 18)
+                            .addComponent(txtcantidad, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(18, 18, 18)
+                            .addComponent(btn_añadir, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(18, 18, 18)
+                            .addComponent(btn_editar, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(18, 18, 18)
+                            .addComponent(btn_eliminar)
+                            .addGap(18, 18, 18)
+                            .addComponent(btn_limpiar, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(lblinfochatarra, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jScrollPane1)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, paneComprasLayout.createSequentialGroup()
+                            .addComponent(btn_limpiar_todo)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(txtidtotal)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(paneComprasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addGroup(paneComprasLayout.createSequentialGroup()
+                                    .addComponent(jLabel13)
+                                    .addGap(18, 18, 18)
+                                    .addComponent(lbltotal, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(btn_imprimir, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                    .addComponent(txtiddetalle, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(113, Short.MAX_VALUE))
         );
         paneComprasLayout.setVerticalGroup(
@@ -580,7 +609,9 @@ public class Main extends javax.swing.JFrame {
                     .addComponent(txtidtotal))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btn_imprimir)
-                .addContainerGap(84, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtiddetalle)
+                .addContainerGap(62, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("  COMPRAS  ", new javax.swing.ImageIcon(getClass().getResource("/payment.png")), paneCompras); // NOI18N
@@ -729,7 +760,7 @@ public class Main extends javax.swing.JFrame {
             .addGap(0, 659, Short.MAX_VALUE)
         );
 
-        jTabbedPane1.addTab("  CAJA  ", new javax.swing.ImageIcon(getClass().getResource("/cash-machine.png")), paneCaja); // NOI18N
+        jTabbedPane1.addTab("  VENTAS  ", new javax.swing.ImageIcon(getClass().getResource("/refund.png")), paneCaja); // NOI18N
 
         javax.swing.GroupLayout paneResumenLayout = new javax.swing.GroupLayout(paneResumen);
         paneResumen.setLayout(paneResumenLayout);
@@ -816,8 +847,24 @@ public class Main extends javax.swing.JFrame {
         String vendedorNombre = txtvendedor.getText().trim();
         String telefono = txtcel.getText().trim();
         String direccion = txtdireccion.getText().trim();
+        String idvendedor = txtidvendedor.getText().trim();
 
-        if (!vendedorNombre.isEmpty() && !telefono.isEmpty() && !direccion.isEmpty()) {
+        if(!idvendedor.isEmpty()){
+            VendedorDAO vndrdao =  new VendedorDAO(sessionFactory);
+            Vendedor vndr = new Vendedor();
+            vndr.setNombre(vendedorNombre);
+            vndr.setDireccion(direccion);
+            vndr.setTelefono(telefono);
+            vndrdao.save(vndr);
+            int idVendedor = vndr.getIdvendedor();
+
+                // Mostrar el ID en el campo de texto txtidvendedor
+                txtidvendedor.setText(String.valueOf(idVendedor));
+            lblinfocliente.setText("<html><font color='Green'>Añadido correctamente</font></html>");
+            
+        }
+        
+        else if (!vendedorNombre.isEmpty() && !telefono.isEmpty() && !direccion.isEmpty()) {
             try {
                 // Obtener una sesión de Hibernate a partir del SessionFactory
                 Session session = sessionFactory.openSession();
@@ -1235,6 +1282,87 @@ public class Main extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_txtcantidadKeyTyped
 
+    private void tbdetallesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tbdetallesMouseClicked
+        // TODO add your handling code here:
+        habilitarBotonesEdicion();
+        int i = tbdetalles.getSelectedRow();
+        TableModel model = tbdetalles.getModel();
+        txtidchatarra.setText(model.getValueAt(i, 0).toString());
+        txtcantidad.setText(model.getValueAt(i, 1).toString());
+        cbchatarra.setSelectedItem(model.getValueAt(i, 2).toString());
+        txtprecio.setText(model.getValueAt(i, 3).toString());
+        txtiddetalle.setText(model.getValueAt(i, 4).toString());
+        
+        
+    }//GEN-LAST:event_tbdetallesMouseClicked
+
+    private void btn_eliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_eliminarActionPerformed
+        int numerofila = tbdetalles.getSelectedRow();
+        if (numerofila >= 0) {
+            int option = JOptionPane.showConfirmDialog(null, "¿Estás seguro de que quieres eliminar?", "Confirmar Acción", JOptionPane.YES_NO_OPTION);
+            if (option == 0) {
+                TableModel model = tbdetalles.getModel();
+                String id = model.getValueAt(numerofila, 0).toString();
+                String idchatarra = txtidchatarra.getText().trim();
+
+                if (!idchatarra.isEmpty()) {
+                    DetalleTicketDAO detalledao = new DetalleTicketDAO(sessionFactory);
+                    List<DetalleTicket> detalles = detalledao.obtenerPorIdChatarra(Integer.parseInt(idchatarra));
+
+                    for (DetalleTicket dtalle : detalles) {
+                        if (dtalle.getChatarra().getIdchatarra() == Integer.parseInt(id)) {
+                            detalledao.delete(dtalle);
+                        }
+                    }
+
+                    JOptionPane.showMessageDialog(null, "Eliminado", "Met Recicla", HEIGHT);
+                    actualizarTablaDetalles();
+                    limpiarChatarra();
+                } else {
+                    JOptionPane.showMessageDialog(null, "No se puede Eliminar", "Met Recicla", HEIGHT);
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "Por favor seleccione una fila a eliminar", "Met Recicla", HEIGHT);
+            }
+        }
+        evt.setSource((char) KeyEvent.VK_CLEAR);
+        deshabilitarBotonesEdicion();
+        actualizarTablaDetalles();
+        cbchatarra.requestFocus();
+    }//GEN-LAST:event_btn_eliminarActionPerformed
+
+    private void btn_editarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_editarActionPerformed
+        String cantidad = txtcantidad.getText().trim();
+        cantidad = cantidad.replace(",", ".");
+        String idchatarra = txtidchatarra.getText().trim();
+        System.out.println("Cantidad: " + cantidad);
+        System.out.println("ID Chatarra: " + idchatarra);
+        String iddetalle = txtiddetalle.getText().trim();
+        
+
+        if (!cantidad.isEmpty() && !idchatarra.isEmpty()) {
+            try {
+                DetalleTicketDAO detalledao = new DetalleTicketDAO(sessionFactory);
+                DetalleTicket detalle = detalledao.findById(Integer.parseInt(iddetalle));
+                if (!iddetalle.isEmpty()) {
+                    detalledao.update(detalle);
+                    JOptionPane.showMessageDialog(null, "Cantidad actualizada correctamente", "Met Recicla", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(null, "No se pudo actualizar la cantidad", "Met Recicla", JOptionPane.WARNING_MESSAGE);
+                }
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                System.err.println(ex.getMessage());
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Por favor complete todos los campos", "Met Recicla", JOptionPane.WARNING_MESSAGE);
+        }
+        actualizarTablaDetalles();
+        deshabilitarBotonesEdicion();
+
+    }//GEN-LAST:event_btn_editarActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -1314,6 +1442,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JTextField txtdireccion;
     private javax.swing.JTextField txtfecha;
     private javax.swing.JTextField txtidchatarra;
+    private javax.swing.JLabel txtiddetalle;
     private javax.swing.JTextField txtidticket;
     private javax.swing.JLabel txtidtotal;
     private javax.swing.JTextField txtidvendedor;
