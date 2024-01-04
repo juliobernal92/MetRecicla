@@ -4,7 +4,7 @@
     <session-factory>
         <property name="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</property>
         <property name="hibernate.connection.driver_class">org.postgresql.Driver</property>
-        <property name="hibernate.connection.url">jdbc:postgresql://localhost:5432/metreciclatest</property>
+        <property name="hibernate.connection.url">jdbc:postgresql://localhost:5432/metreciclabup</property>
         <property name="hibernate.connection.username">postgres</property>
         <property name="hibernate.connection.password">123</property>
         <property name="hibernate.hbm2ddl.auto">update</property>
@@ -16,6 +16,12 @@
 	<mapping class="entidades.DetalleTicket"/>
 	<mapping class="entidades.Ticket"/>
 	<mapping class="entidades.Total"/>
+        <mapping class="entidades.LocalesVentas"/>
+        <mapping class="entidades.PrecioLocal"/>
+        <mapping class="entidades.TotalVenta"/>
+        <mapping class="entidades.VentasTicket"/>
+        <mapping class="entidades.Empleados"/>
+        <mapping class="entidades.DetallesVentas"/>
 
 	</session-factory>
 </hibernate-configuration>

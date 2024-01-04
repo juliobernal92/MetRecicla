@@ -1,0 +1,12 @@
+----Met Recicla---
+Fecha: 2023-11-18 00:00:00.0
+Cliente: hola
+-----------------
+
+Cantidad  Descripción         Precio    Subtotal       
+-----------------2         Desodorante         6,500     13,000         
+2         Cabo                9,000     18,000         
+4         Perfil              11,000    44,000         
+4         TIPO 2              8,000     32,000         
+-----------------
+TOTAL:                                  107,000        

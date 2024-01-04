@@ -8,7 +8,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.3.0</version>
+        <version>3.2.4</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -18,7 +18,7 @@
             <configuration>
               <transformers>
                 <transformer>
-                  <resource>META-INF/spring.handlers</resource>
+                  <mainClass>vistas.Main</mainClass>
                 </transformer>
               </transformers>
             </configuration>
@@ -42,4 +42,10 @@
       <scope>provided</scope>
     </dependency>
   </dependencies>
+  <properties>
+    <maven.compiler.target>20</maven.compiler.target>
+    <exec.mainClass>vistas.Main</exec.mainClass>
+    <maven.compiler.source>20</maven.compiler.source>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
 </project>

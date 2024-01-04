@@ -1,0 +1,15 @@
+----MET RECICLA LUQUE---
+Telefono: (0984) 749-327
+
+Fecha: 09-12-2023
+Cliente: Sin Nombre
+-----------------------------------------
+CANT      DESC          PREC    SUBT           
+-----------------------------------------
+0.6       Celular Entero15,000  9,000          
+0.25      Bronce        25,000  6,250          
+0.1       Duro - Aluminio7,500   750            
+0.25      Blando - Aluminio6,500   1,625          
+0.35      Aluminio Sucio3,000   1,050          
+-----------------------------------------
+TOTAL:                        18,675    

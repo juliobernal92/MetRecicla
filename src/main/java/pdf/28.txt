@@ -1,0 +1,12 @@
+----Met Recicla---
+Fecha: 2023-11-18 00:00:00.0
+Cliente: hola
+-----------------
+
+CANT      DESC                PREC      SUBT           
+-----------------
+2         Desodorante         6,500     13,000         
+2         Perfil              11,000    22,000         
+3         Chapa               6,500     19,500         
+-----------------
+TOTAL:                                  54,500    

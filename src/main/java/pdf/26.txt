@@ -1,0 +1,13 @@
+----Met Recicla---
+Fecha: 2023-11-18 00:00:00.0
+Cliente: hola
+-----------------
+
+Cantidad  Descripción         Precio    Subtotal       
+-----------------
+11        Desodorante         6,500     71,500         
+1         Chapa               6,500     6,500          
+1         Perfil              11,000    11,000         
+1         TIPO 2              8,000     8,000          
+-----------------
+TOTAL:                                  97,000         

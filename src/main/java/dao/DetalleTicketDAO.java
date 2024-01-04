@@ -54,11 +54,11 @@ public class DetalleTicketDAO {
             return session.createQuery("FROM DetalleTicket", DetalleTicket.class).list();
         }
     }
-    
-    public DetalleTicket obtenerporID(int id){
+
+    public DetalleTicket obtenerporID(int id) {
         return findById(id);
     }
-    
+
     public List<DetalleTicket> obtenerPorIdTicket(int idticket) {
         try (Session session = sessionFactory.openSession()) {
             String hql = "FROM DetalleTicket WHERE idticket = :idticket";
@@ -76,26 +76,24 @@ public class DetalleTicketDAO {
             return query.getResultList(); // Obtén la lista de detalles que corresponden al ID de la chatarra
         }
     }
-    
+
     public boolean actualizarCantidadPorIdChatarra(int idChatarra, BigDecimal nuevaCantidad) {
-    try (Session session = sessionFactory.openSession()) {
-        Transaction transaction = session.beginTransaction();
+        try (Session session = sessionFactory.openSession()) {
+            Transaction transaction = session.beginTransaction();
 
-        // Consulta para actualizar la cantidad por idchatarra
-        String hql = "UPDATE DetalleTicket SET cantidad = :nuevaCantidad WHERE chatarra.idchatarra = :idChatarra";
-        Query<DetalleTicket> query = session.createQuery(hql);
+            // Consulta para actualizar la cantidad por idchatarra
+            String hql = "UPDATE DetalleTicket SET cantidad = :nuevaCantidad WHERE chatarra.idchatarra = :idChatarra";
+            Query<DetalleTicket> query = session.createQuery(hql);
 
-        query.setParameter("nuevaCantidad", nuevaCantidad);
-        query.setParameter("idChatarra", idChatarra);
+            query.setParameter("nuevaCantidad", nuevaCantidad);
+            query.setParameter("idChatarra", idChatarra);
 
-        int filasActualizadas = query.executeUpdate();
+            int filasActualizadas = query.executeUpdate();
 
-        transaction.commit();
-        
-        return filasActualizadas > 0; // Retorna true si al menos una fila fue actualizada
+            transaction.commit();
+
+            return filasActualizadas > 0; // Retorna true si al menos una fila fue actualizada
+        }
     }
-}
-
-
 
 }

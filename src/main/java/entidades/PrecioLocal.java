@@ -21,7 +21,7 @@ public class PrecioLocal implements Serializable {
     
     @ManyToOne
     @JoinColumn(name = "idlocal")
-    private LocalesVenta idlocal;
+    private LocalesVentas idlocal;
     
     @ManyToOne
     @JoinColumn(name = "idchatarra")
@@ -49,14 +49,14 @@ public class PrecioLocal implements Serializable {
     /**
      * @return the idlocal
      */
-    public LocalesVenta getIdlocal() {
+    public LocalesVentas getIdlocal() {
         return idlocal;
     }
 
     /**
      * @param idlocal the idlocal to set
      */
-    public void setIdlocal(LocalesVenta idlocal) {
+    public void setIdlocal(LocalesVentas idlocal) {
         this.idlocal = idlocal;
     }
 
